@@ -1,6 +1,8 @@
+from rest_framework import response
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import exceptions, serializers
+from users.authentication import generate_acess_token
 
 from users.serializers import UserSerializer
 from .models import User
@@ -30,7 +32,15 @@ def login(request):
   if not user.check_password(password):
     raise exceptions.AuthenticationFailed('비밀번호가 틀렸습니다.')
 
-  return Response('로그인')
+  response = Response()
+
+  token = generate_acess_token(user)
+  response.set_cookie(key='jwt', value=token, httponly=True)
+  response.data = {
+    'jwt': token
+  }
+
+  return response
 
 @api_view(['GET'])
 def users(request):
