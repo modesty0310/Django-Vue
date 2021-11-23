@@ -1,5 +1,10 @@
 from rest_framework import serializers
-from .models import User
+from .models import Permission, User
+
+class PermissionSerializer(serializers.ModelSerializer):
+  class Meta:
+    model = Permission
+    fields = '__all__'
 
 class UserSerializer(serializers.ModelSerializer):
   class Meta:

@@ -2,12 +2,12 @@ from rest_framework import response
 from rest_framework.decorators import api_view
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from rest_framework import exceptions
+from rest_framework import exceptions, viewsets
 from rest_framework.views import APIView
 
 from .authentication import generate_acess_token, JWTAuthentication
-from .serializers import UserSerializer
-from .models import User
+from .serializers import PermissionSerializer, UserSerializer
+from .models import User, Permission
 
 @api_view(['POST'])
 def resister(request):
@@ -68,9 +68,32 @@ class AuthenticatedUser(APIView):
     })
 
 
-@api_view(['GET'])
-def users(request):
-  serializer = UserSerializer(User.objects.all(), many=True)
-  return Response(serializer.data)
+class PermissionAPIView(APIView):
+  authentication_classes = [JWTAuthentication]
+  permission_classes = [IsAuthenticated]
 
+  def get(self, request):
+    serializer = PermissionSerializer(Permission.objects.all(), many=True)
 
+    return Response({
+      'data' : serializer.data
+    })
+
+class RoleViewSet(viewsets.ViewSet):
+  authentication_classes = [JWTAuthentication]
+  permission_classes = [IsAuthenticated]
+
+  def list(self, request):
+    pass
+
+  def create(self, request):
+    pass
+
+  def retrieve(self, request, pk=None):
+    pass
+
+  def update(self, request, pk=None):
+    pass
+
+  def destroy(self, request, pk=None):
+    pass
