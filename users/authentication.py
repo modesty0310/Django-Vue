@@ -1,6 +1,10 @@
 import jwt
 import datetime
 from django.conf import settings
+from django.contrib.auth import get_user_model
+
+from rest_framework import exceptions
+from rest_framework.authentication import BaseAuthentication
 
 def generate_acess_token(user):
   payload = {
@@ -10,3 +14,26 @@ def generate_acess_token(user):
   }
 
   return jwt.encode(payload, settings.SECRET_KEY, algorithm='HS256')
+
+class JWTAuthentication(BaseAuthentication):
+
+  def authenticate(self, request):
+    print(request)
+    print(request.COOKIES)
+    token = request.COOKIES.get('jwt')
+    print(token)
+
+    if not token:
+      return None
+
+    try:
+      payload = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])
+    except jwt.ExpiredSignatureError:
+      raise exceptions.AuthenticationFailed('unauthenticated')
+
+    user = get_user_model().objects.filter(id=payload['user_id']).first()
+
+    if user is None:
+      raise exceptions.AuthenticationFailed('user not found')
+    
+    return  (user, None)
