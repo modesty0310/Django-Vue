@@ -1,3 +1,4 @@
+from rest_framework import response
 from rest_framework.decorators import api_view
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -42,6 +43,18 @@ def login(request):
   }
 
   return response
+
+@api_view(['POST'])
+def logout(request):
+
+  response = Response()
+  response.delete_cookie(key='jwt')
+  response.data = {
+    'message': 'success'
+  }
+
+  return response
+
 
 class AuthenticatedUser(APIView):
   authentication_classes = [JWTAuthentication]
