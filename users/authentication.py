@@ -7,6 +7,11 @@ from rest_framework import exceptions
 from rest_framework.authentication import BaseAuthentication
 
 def generate_acess_token(user):
+  """
+  jwt 토큰 생성
+  1. payload 생성 (user_id, 만료일, 생성시간)
+  2. jwt encode 후 리턴
+  """
   payload = {
     'user_id': user.id,
     'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes=60),
@@ -16,7 +21,16 @@ def generate_acess_token(user):
   return jwt.encode(payload, settings.SECRET_KEY, algorithm='HS256')
 
 class JWTAuthentication(BaseAuthentication):
-
+  """
+  jwt 확인
+  1. BaseAuthentication 상속
+  2. def authenticate
+  3. jwt 가져오기
+  4. 토큰 비었는지 확인
+  5. jwt decode
+  6. user 정보 가져오기
+  7. user 정보 리턴
+  """
   def authenticate(self, request):
     token = request.COOKIES.get('jwt')
 

@@ -1,4 +1,3 @@
-from rest_framework import response
 from rest_framework.decorators import api_view
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -6,11 +5,19 @@ from rest_framework import exceptions, viewsets
 from rest_framework.views import APIView
 
 from .authentication import generate_acess_token, JWTAuthentication
-from .serializers import PermissionSerializer, UserSerializer
-from .models import User, Permission
+from .serializers import PermissionSerializer, RoleSerializer, UserSerializer
+from .models import Role, User, Permission
 
 @api_view(['POST'])
 def resister(request):
+  """
+  회원가입
+  1. email은 unique로 지정 해둠
+  2. 비밀번호가 일치 하는지 확인
+  3. userserializer 생성
+  4. is_vaild() 유효한지 확인
+  5. 저장
+  """
   data = request.data
 
   if data['password'] != data['password_confirm']:
@@ -23,6 +30,12 @@ def resister(request):
 
 @api_view(['POST'])
 def login(request):
+  """
+  로그인
+  1. email 확인
+  2. 비밀번호 확인
+  3. 로그인 후 jwt 발행
+  """
   email = request.data.get('email')
   password = request.data.get('password')
 
@@ -46,7 +59,11 @@ def login(request):
 
 @api_view(['POST'])
 def logout(request):
-
+  """
+  로그아웃
+  1. delete_cookie
+  2. 성공문자 리턴
+  """
   response = Response()
   response.delete_cookie(key='jwt')
   response.data = {
@@ -57,6 +74,11 @@ def logout(request):
 
 
 class AuthenticatedUser(APIView):
+  """
+  유저 확인
+  1. authentication_classes설정 custom Authentication으로 확인
+  2. serializer 생성
+  """
   authentication_classes = [JWTAuthentication]
   permission_classes = [IsAuthenticated]
 
@@ -69,6 +91,11 @@ class AuthenticatedUser(APIView):
 
 
 class PermissionAPIView(APIView):
+  """
+  권한 확인
+  1. authentication_classes설정 custom Authentication으로 확인
+  2. serializer 생성
+  """
   authentication_classes = [JWTAuthentication]
   permission_classes = [IsAuthenticated]
 
@@ -80,11 +107,19 @@ class PermissionAPIView(APIView):
     })
 
 class RoleViewSet(viewsets.ViewSet):
+  """
+  Role 확인
+  1. list 모든 유저의 role를 보여줌
+  """
   authentication_classes = [JWTAuthentication]
   permission_classes = [IsAuthenticated]
 
   def list(self, request):
-    pass
+    serializer = RoleSerializer(Role.objects.all(), many=True)
+
+    return Response({
+      'data':serializer.data
+    })
 
   def create(self, request):
     pass
